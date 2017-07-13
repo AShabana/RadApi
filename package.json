@@ -1,0 +1,21 @@
+{
+  "name": "radapi",
+  "version": "1.0.0",
+  "description": "CRUD operation for freeradius radcheck db.table",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo not implemented yet"
+  },
+  "keywords": [
+    "api",
+    "radius"
+  ],
+  "author": "ashabana",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "log4js": "^2.0.1",
+    "mysql": "^2.13.0",
+    "promise": "^8.0.0"
+  }
+}
