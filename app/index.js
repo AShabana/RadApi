@@ -52,7 +52,6 @@ app.put("/Account", function(req ,resp) {
          resp.status(400).send("Invalid add new account request you should use password and name paramter in the query string") ;
    }else{
         log.info("Adding new account proceedure") ;
-        log.debug("DB Connected!");
         query_string = util.format(
             "select count(*) as count from radcheck where username = \'%s\';"
             ,normalizeInput( req.query.name)) ;
@@ -62,7 +61,6 @@ app.put("/Account", function(req ,resp) {
             log.trace("Query result : \n\t"  + util.inspect(result));
             log.trace(result[0].count);
             result = result[0].count;
-            log.error(result) ;
             if (parseInt(result) == 0){
                 query_string = util.format("INSERT INTO radcheck (username,value,attribute) VALUES (\"%s\",\"%s\", \"Cleartext-Password\")\;" ,normalizeInput(req.query.name),normalizeInput(req.query.password));
                 log.trace("DB query : " + query_string);
@@ -81,13 +79,41 @@ app.put("/Account", function(req ,resp) {
 
 //Delete account
 app.delete("/Account/:acc_name", function(req ,resp){
-    log.info("Delete account request ..") ;
-    log.trace("req.params ->" + util.inspect(req.params));
-    console.log(req.params.acc_name) ;
-    if ( typeof req.params.acc_name === undefined || req.params.acc_name === null)
-        resp.status(400).send("Invalid request, missing acc_name as /Account/:acc_name");
-    resp.status(200).send("Deleting account -> " + req.params.acc_name);
+   log.info("Remove account request")  ;
+   log.trace("req.params ->" + util.inspect(req.params));
+   log.trace("req.query ->" + util.inspect(req.query));
+   acc_name = req.params.acc_name ;
+   if (acc_name === undefined){
+         log.warn("Invalid remove account request  you should use name paramter in the query string");
+         resp.status(400).send("Invalid delete account request you should use and name paramter in the query string") ;
+   }else{
+        log.info("Deleting new account proceedure") ;
+        query_string = util.format(
+            "select count(*) as count from radcheck where username = \'%s\';"
+            ,normalizeInput(acc_name)) ;
+        log.trace("DB query : " + query_string);
+        con.query(query_string, function(err, result){
+            if (err) throw err;
+            log.trace("Query result : \n\t"  + util.inspect(result));
+            log.trace(result[0].count);
+            result = result[0].count;
+            if (parseInt(result) > 0){
+                query_string = util.format("DELETE FROM radcheck where username = \'%s\';" ,normalizeInput(acc_name));
+                log.trace("DB query : " + query_string);
+                con.query(query_string, function(err, result){
+                    if (err) throw err ;
+                    log.trace("Query result : \n\t"  + util.inspect(result));
+                    resp.status(200).send("Done.\<br> inserted id = " + result.insertId);
+                });
+            }else{
+                log.warn("User does not exist before");
+                resp.status(400).send("User " + this.user + " does not exist before</br>");
+            }
+        });
+    }
 });
+
+
 
 //Update account info
 app.post("/Account/:acc_name", function(req ,resp){
